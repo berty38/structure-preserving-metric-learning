@@ -17,8 +17,12 @@ function model = spml(X, A, params)
 % margin - target minimum difference between connected and disconnected distance
 % miniBatchSize - number of triplets to consider each iterations
 % diagonal - true if M is constrained to be nonzero only along main
-% diagonal, otherwise full M matrix is computed
+%            diagonal, otherwise full M matrix is computed
 % printEvery - number of iterations between graphical output
+% project - whether to project to positive semi-definite metric. 
+%          'final'- project at end,
+%          'iter' - project every iteration
+%          'off' - no projection
 %
 % returns:
 % model
@@ -58,6 +62,13 @@ end
 if ~isfield(params, 'printEvery')
     params.printEvery = 0;
 end
+
+if ~isfield(params, 'project')
+    params.project = 'final';
+end
+
+iterProject = strcmp(params.project, 'iter');
+finalProject = strcmp(params.project, 'final');
 
 % maximum size graph that we still count imposters on
 MAX_COUNT_IMPOSTERS = 6000;
@@ -180,6 +191,11 @@ for t=1:T
     
     M = M0 - eta * grad;
     
+    
+    if iterProject
+        M = psdProject(M, params);
+    end
+    
     if (mod(t, params.printEvery) == 0)
         figure(12); plot(1:t, smooth(scores(1:t), 500, 'moving'));
         title('Number of Impostors Per Node');
@@ -194,9 +210,41 @@ for t=1:T
     
 end
 
+
+if finalProject
+    M = psdProject(M, params);
+end
+
 model.M = M;
 model.numImpIts = scores;
 model.elapsedSec = toc;
 if N < MAX_COUNT_IMPOSTERS
     model.afterNumImpostors = countNumImpostors(X, M, A);
+end
+
+
+
+
+
+function M = psdProject(M0, params)
+
+% if diagonal, just delete negative entries
+if params.diagonal
+    M = M0;
+    M(M<0) = 0;
+    return;
+end
+
+% otherwise use eig to project to PSD
+M = false;
+k = min(size(M0,1), 100);
+while ~M
+    [V,D] = eigs((M0 + M0')/2,k);
+    
+    if min(diag(D))<=0 || k >= size(M,1)
+        inds = diag(D)>0;
+        M = V(:,inds)*D(inds,inds)*V(:,inds)';
+    else
+        k = k*2;
+    end
 end

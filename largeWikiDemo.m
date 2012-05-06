@@ -9,12 +9,22 @@ load data/WikiBFSDump100000;
 % title('Word representations of articles');
 % xlabel('word');
 % ylabel('document');
-% 
+%
 figure(2);
 spy(A);
 title('Wiki Links');
 ylabel('From Document');
 xlabel('To Document');
+
+
+%% normalize data
+
+X = bsxfun(@rdivide, X, sum(X,2));
+X(isnan(X)) = 0;
+
+%% symmetrize links
+
+A = A+A';
 
 %% sample 10 holdout documents
 
@@ -31,10 +41,11 @@ Atr = A(~holdout, ~holdout);
 %% run spml
 
 params = [];
-params.lambda = 1e-5;
+params.lambda = 1e-6;
 params.maxIter = 5000;
 params.printEvery = 100;
-params.miniBatchSize = 50;
+params.project = 'final';
+params.diagonal = true;
 
 model = spml(Xtr', Atr, params);
 
@@ -50,7 +61,6 @@ for i = 1:length(test_inds)
     [~,inds] = sort(D(test_inds(i),:),'ascend');
     
     fprintf('Closest articles to %s:\n', names{test_inds(i)});
-    disp(names(inds(1:10)));
+    disp(names(inds(1:5)));
     
-    pause;
 end

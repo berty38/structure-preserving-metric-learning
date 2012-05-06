@@ -7,7 +7,7 @@ load data/graphTheory;
 %% Visualize data
 
 figure(1);
-imagesc(X);
+imagesc(X>0);
 title('Word representations of articles');
 xlabel('word');
 ylabel('document');
@@ -17,6 +17,21 @@ spy(A);
 title('Wiki Links');
 ylabel('From Document');
 xlabel('To Document');
+
+%% remove stop words and rare words
+% recommended if using full metric matrix (see params.diagonal below)
+freqs = sum(X>0)./size(X,1);
+inds = freqs > .1 & freqs < .9;
+X = X(:,inds);
+
+%% normalize data
+
+X = bsxfun(@rdivide, X, sum(X,2));
+X(isnan(X)) = 0;
+
+%% symmetrize links
+
+A = A+A';
 
 %% sample 10 holdout documents
 
@@ -33,9 +48,14 @@ Atr = A(~holdout, ~holdout);
 %% run spml
 
 params = [];
-params.lambda = 1e-5;
+params.lambda = 1e-6;
 params.maxIter = 5000;
-params.printEvery = 1;
+params.printEvery = 100;
+params.project = 'final';
+params.diagonal = true;
+% turn off 'diagonal' full matrix (richer metric)
+%params.diagonal = false;
+
 
 model = spml(Xtr', Atr, params);
 

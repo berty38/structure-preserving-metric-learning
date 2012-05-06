@@ -10,9 +10,9 @@ if nargin==3 && issparse(mask)
     % if you can't compile the mex file spouterprod2, use the matlab version
     % spouterprod.m
     %K = spouterprod(mask, XM, X')+mask;
-    K = spouterprod2(mask, XM', X)+mask;
+    K = spouterprod2(mask, sparse(XM'), sparse(X))+mask;
 else
-    K = XM*X;
+    K = XM*X + mask;
 end
 
 XX = sum(XM'.*X)';

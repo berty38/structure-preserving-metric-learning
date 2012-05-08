@@ -1,0 +1,10 @@
+This is the MATLAB implementation of Structure Preserving Metric Learning, an algorithm for learning a distance metric from a network. This software is free for academic use. If you use this for research, cite the paper:
+
+@incollection{NIPS2011_1070,
+ title ={Learning a Distance Metric from a Network},
+ author={Blake Shaw and Bert Huang and Tony Jebara},
+ booktitle = {Advances in Neural Information Processing Systems 24},
+ editor = {J. Shawe-Taylor and R.S. Zemel and P. Bartlett and F.C.N. Pereira and K.Q. Weinberger},
+ pages = {1899--1907},
+ year = {2011}
+}

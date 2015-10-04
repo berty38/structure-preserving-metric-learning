@@ -115,7 +115,7 @@ for t=1:T
         delta = zeros(1, N);
         delta(i) = 1;
         
-        [~, conIDX] = find(A(:,i) == 1);
+        conIDX = find(A(:,i) == 1);
                 
         if ~isempty(conIDX) && length(conIDX) < N
             
@@ -128,7 +128,7 @@ for t=1:T
                     k = randi(N);
                 end
             else
-                [~, disIDX] = find((A(i, :) + delta) == 0); %remove O(n) time
+                disIDX = find((A(i, :) + delta) == 0); %remove O(n) time
                 idx = randi(length(disIDX));
                 k = disIDX(idx);
             end

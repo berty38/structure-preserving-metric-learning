@@ -181,7 +181,10 @@ for t=1:T
     C = sparse(C);
     
     if params.diagonal
-        dGrad = sum((X*C) .* X, 2);
+        XC = X*C;
+        cols = find(sum(XC));
+        dGrad = sum(XC(:,cols).*X(:,cols), 2);
+        % dGrad = sum((X*C) .* X, 2);
         grad = sparse(1:D, 1:D, dGrad, D, D, D) + lambda * M;
     else
         grad = X * C * X' + lambda * M;
@@ -198,7 +201,7 @@ for t=1:T
     
     if (mod(t, params.printEvery) == 0)
         figure(12); plot(1:t, smooth(scores(1:t), 500, 'moving'));
-        title('Number of Impostors Per Node');
+        title('Number of Impostors Per Batch');
         xlabel('Iterations');
         ylabel('Number of Impostors Found');
         drawnow;
